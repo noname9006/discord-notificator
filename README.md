@@ -1,6 +1,10 @@
 # discord-notificator
 
-A standalone Discord bot that sends **conditional embedded messages** to a channel on a cron schedule.
+A standalone Discord bot that sends **conditional embedded messages** to channels on cron schedules.
+
+Supports two notification types:
+- **Global queue** — notifications fire sequentially in a loop, sharing one cron schedule, `minMessages`, and `cooldownMinutes`.
+- **Independent** — each notification has its own cron schedule, `minMessages`, and `cooldownMinutes`, running in complete isolation.
 
 ---
 
@@ -8,11 +12,13 @@ A standalone Discord bot that sends **conditional embedded messages** to a chann
 
 | Condition | Behavior |
 |-----------|----------|
-| First run after launch | Sends notification **immediately** |
-| Cron triggers & `userMessageCount >= MIN_MESSAGES` | Sends notification |
-| Cron triggers & not enough messages | Schedules a cooldown retry in `COOLDOWN_MINUTES` |
+| First run after launch | Sends notification **immediately** (both global and each independent) |
+| Cron triggers & `userMessageCount >= minMessages` | Sends notification |
+| Cron triggers & not enough messages | Schedules a cooldown retry in `cooldownMinutes` |
 
 The bot counts non-bot messages posted in the target channel. The counter resets after each successful notification.
+
+For the **global queue**, notifications send sequentially — after the last one fires it loops back to the first. The queue pointer advances only on a successful send.
 
 ---
 
@@ -33,9 +39,11 @@ cp .env.example .env
 # Edit .env with your values
 ```
 
-### 3. Customize the embed
+### 3. Customize notifications
 
-Edit `embed.js` to change the embedded message title, description, color, and image.
+Edit `notifications/global.config.js` to define the global queue's embed list and shared settings.
+
+Edit `notifications/independent.config.js` to define independent notifications, each with their own embed and settings.
 
 ### 4. Run
 
@@ -47,13 +55,33 @@ npm start
 
 ## Environment Variables
 
+### Global Queue
+
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DISCORD_TOKEN` | Yes | — | Your Discord bot token |
-| `NOTIFICATIONS_CHANNEL` | Yes | — | Channel ID to send notifications to |
-| `NOTIFICATIONS_CRON_SCHEDULE` | No | `0 * * * *` | Cron expression for notification schedule |
-| `MIN_MESSAGES` | No | `10` | Min user messages required before sending |
-| `COOLDOWN_MINUTES` | No | `15` | Minutes to wait before retrying |
+| `GLOBAL_CHANNEL` | Yes | — | Channel ID for global queue notifications |
+| `GLOBAL_CRON_SCHEDULE` | No | `0 * * * *` | Cron expression for the global queue |
+| `GLOBAL_MIN_MESSAGES` | No | `10` | Min user messages required before sending |
+| `GLOBAL_COOLDOWN_MINUTES` | No | `15` | Minutes to wait before retrying |
+
+### Independent Notification 1
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `INDEPENDENT_1_CHANNEL` | Yes | — | Channel ID for independent notification 1 |
+| `INDEPENDENT_1_CRON_SCHEDULE` | No | `30 * * * *` | Cron expression |
+| `INDEPENDENT_1_MIN_MESSAGES` | No | `5` | Min user messages required before sending |
+| `INDEPENDENT_1_COOLDOWN_MINUTES` | No | `10` | Minutes to wait before retrying |
+
+---
+
+## Notification Types
+
+| Type | Cron | minMessages | Cooldown | Order |
+|------|------|-------------|----------|-------|
+| Global | Shared | Shared | Shared | Sequential, looping |
+| Independent | Per-notification | Per-notification | Per-notification | Parallel, isolated |
 
 ---
 
@@ -61,9 +89,14 @@ npm start
 
 ```
 discord-notificator/
-├── index.js          # Main bot logic, event handlers, cron scheduling
-├── embed.js          # Embed builder — customize your message here
-├── .env.example      # Example environment variables
+├── index.js                        # Boot entry point
+├── engines/
+│   ├── globalEngine.js             # Global sequential queue engine
+│   └── independentEngine.js        # Single independent notification engine
+├── notifications/
+│   ├── global.config.js            # Global queue config
+│   └── independent.config.js       # Array of independent notification configs
+├── .env.example                    # Example environment variables
 ├── package.json
 └── README.md
 ```
