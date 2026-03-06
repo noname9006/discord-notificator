@@ -1,0 +1,23 @@
+{
+  "name": "discord-notificator",
+  "version": "1.0.0",
+  "description": "Standalone Discord bot that sends conditional embedded messages on a cron schedule",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "embed",
+    "notificator",
+    "cron"
+  ],
+  "author": "noname9006",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.0.0",
+    "dotenv": "^16.0.0",
+    "node-cron": "^3.0.0"
+  }
+}
