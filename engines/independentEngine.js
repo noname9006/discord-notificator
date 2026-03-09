@@ -1,11 +1,13 @@
 const cron = require('node-cron');
 
-function startIndependentEngine(client, config) {
+function startIndependentEngine(client, config, { stateStore, state }) {
     const { id, channelId, cronSchedule, minMessages, cooldownMinutes, embed } = config;
 
-    let userMessageCount      = 0;
+    const saved               = state.independentState[id] ?? {};
+    let firstNotificationSent = saved.firstNotificationSent ?? false;
+    let userMessageCount      = saved.userMessageCount ?? 0;
     let cooldownTimeout       = null;
-    let firstNotificationSent = false;
+    let saveMsgCountTimer     = null;
 
     function resetCounter() {
         userMessageCount = 0;
@@ -31,6 +33,18 @@ function startIndependentEngine(client, config) {
             return;
         }
 
+        const now = new Date().toISOString();
+        if (!state.independentState[id]) state.independentState[id] = {};
+        state.independentState[id].firstNotificationSent = true;
+        state.independentState[id].lastSentTimestamp      = now;
+        state.independentState[id].userMessageCount       = 0;
+        stateStore.addEntry(state, {
+            type: 'independent_sent',
+            notificationId: id,
+            channelId,
+            timestamp: now
+        });
+        stateStore.saveState(state);
         resetCounter();
     }
 
@@ -63,6 +77,12 @@ function startIndependentEngine(client, config) {
         if (message.channelId !== channelId) return;
         userMessageCount++;
         console.log(`[INDEPENDENT][${id}][DEBUG] User message count: ${userMessageCount}`);
+        clearTimeout(saveMsgCountTimer);
+        saveMsgCountTimer = setTimeout(() => {
+            if (!state.independentState[id]) state.independentState[id] = {};
+            state.independentState[id].userMessageCount = userMessageCount;
+            stateStore.saveState(state);
+        }, 30_000);
     });
 
     cron.schedule(cronSchedule, () => {

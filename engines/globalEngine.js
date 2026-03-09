@@ -1,4 +1,4 @@
-function startGlobalEngine(client, config) {
+function startGlobalEngine(client, config, { stateStore, state }) {
     const { channelId, intervalMinutes, minMessages, cooldownMinutes, notifications } = config;
 
     if (!notifications || notifications.length === 0) {
@@ -6,10 +6,11 @@ function startGlobalEngine(client, config) {
         return;
     }
 
-    let currentIndex         = 0;
-    let userMessageCount     = 0;
-    let cooldownTimeout      = null;
-    let firstNotificationSent = false;
+    let currentIndex          = (state.globalState.currentIndex ?? 0) % notifications.length;
+    let firstNotificationSent = state.globalState.firstNotificationSent ?? false;
+    let userMessageCount      = state.globalState.userMessageCount ?? 0;
+    let cooldownTimeout       = null;
+    let saveMsgCountTimer     = null;
 
     function resetCounter() {
         userMessageCount = 0;
@@ -37,6 +38,18 @@ function startGlobalEngine(client, config) {
         }
 
         currentIndex = (currentIndex + 1) % notifications.length;
+        const now = new Date().toISOString();
+        state.globalState.currentIndex          = currentIndex;
+        state.globalState.lastSentTimestamp     = now;
+        state.globalState.firstNotificationSent = true;
+        state.globalState.userMessageCount      = 0;
+        stateStore.addEntry(state, {
+            type: 'global_sent',
+            notificationId: notification.id,
+            channelId,
+            timestamp: now
+        });
+        stateStore.saveState(state);
         resetCounter();
         return true;
     }
@@ -70,13 +83,38 @@ function startGlobalEngine(client, config) {
         if (message.channelId !== channelId) return;
         userMessageCount++;
         console.log(`[GLOBAL][DEBUG] User message count: ${userMessageCount}`);
+        clearTimeout(saveMsgCountTimer);
+        saveMsgCountTimer = setTimeout(() => {
+            state.globalState.userMessageCount = userMessageCount;
+            stateStore.saveState(state);
+        }, 30_000);
     });
 
-    tryNotify();
-    const intervalId = setInterval(() => {
-        console.log('[GLOBAL][DEBUG] Interval triggered - checking if notification should be sent.');
+    function startScheduler() {
+        setInterval(() => {
+            console.log('[GLOBAL][DEBUG] Interval triggered - checking if notification should be sent.');
+            tryNotify();
+        }, intervalMinutes * 60 * 1000);
+    }
+
+    if (firstNotificationSent && state.globalState.lastSentTimestamp) {
+        const elapsed   = Date.now() - new Date(state.globalState.lastSentTimestamp).getTime();
+        const remaining = intervalMinutes * 60 * 1000 - elapsed;
+
+        if (remaining > 0) {
+            console.log(`[GLOBAL] Resuming after restart. Next notification in ${Math.ceil(remaining / 60000)} min.`);
+            setTimeout(() => {
+                tryNotify();
+                startScheduler();
+            }, remaining);
+        } else {
+            tryNotify();
+            startScheduler();
+        }
+    } else {
         tryNotify();
-    }, intervalMinutes * 60 * 1000);
+        startScheduler();
+    }
 
     console.log(`[GLOBAL] Engine started. Channel: ${channelId}, Interval: ${intervalMinutes}min, MinMessages: ${minMessages}, Cooldown: ${cooldownMinutes}min, Notifications: ${notifications.length}`);
 }
