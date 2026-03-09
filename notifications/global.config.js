@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     channelId: process.env.GLOBAL_CHANNEL,
-    cronSchedule: process.env.GLOBAL_CRON_SCHEDULE || '0 * * * *',
+    intervalMinutes: parseInt(process.env.GLOBAL_INTERVAL_MINUTES || '120', 10),
     minMessages: parseInt(process.env.GLOBAL_MIN_MESSAGES || '10', 10),
     cooldownMinutes: parseInt(process.env.GLOBAL_COOLDOWN_MINUTES || '15', 10),
     notifications: [

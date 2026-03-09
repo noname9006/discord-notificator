@@ -1,7 +1,5 @@
-const cron = require('node-cron');
-
 function startGlobalEngine(client, config) {
-    const { channelId, cronSchedule, minMessages, cooldownMinutes, notifications } = config;
+    const { channelId, intervalMinutes, minMessages, cooldownMinutes, notifications } = config;
 
     if (!notifications || notifications.length === 0) {
         console.error('[GLOBAL][ERROR] No notifications defined in global config. Engine not started.');
@@ -74,12 +72,13 @@ function startGlobalEngine(client, config) {
         console.log(`[GLOBAL][DEBUG] User message count: ${userMessageCount}`);
     });
 
-    cron.schedule(cronSchedule, () => {
-        console.log('[GLOBAL][DEBUG] Cron triggered - checking if notification should be sent.');
+    tryNotify();
+    const intervalId = setInterval(() => {
+        console.log('[GLOBAL][DEBUG] Interval triggered - checking if notification should be sent.');
         tryNotify();
-    });
+    }, intervalMinutes * 60 * 1000);
 
-    console.log(`[GLOBAL] Engine started. Channel: ${channelId}, Cron: ${cronSchedule}, MinMessages: ${minMessages}, Cooldown: ${cooldownMinutes}min, Notifications: ${notifications.length}`);
+    console.log(`[GLOBAL] Engine started. Channel: ${channelId}, Interval: ${intervalMinutes}min, MinMessages: ${minMessages}, Cooldown: ${cooldownMinutes}min, Notifications: ${notifications.length}`);
 }
 
 module.exports = { startGlobalEngine };
