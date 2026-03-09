@@ -1,5 +1,4 @@
 const { EmbedBuilder } = require('discord.js');
-
 module.exports = {
     channelId: process.env.GLOBAL_CHANNEL,
     intervalMinutes: parseInt(process.env.GLOBAL_INTERVAL_MINUTES || '120', 10),
@@ -10,17 +9,14 @@ module.exports = {
             id: 'global-notification-1',
             embed: new EmbedBuilder()
                 .setColor('Gold')
-                .setTitle('Global Notification 1')
-                .setDescription('This is the first global notification in the queue.')
-                .setTimestamp(),
-        },
-        {
-            id: 'global-notification-2',
-            embed: new EmbedBuilder()
-                .setColor('Blue')
-                .setTitle('Global Notification 2')
-                .setDescription('This is the second global notification in the queue.')
-                .setTimestamp(),
-        },
-    ],
-};
+                .setTitle('⛓️ Botanix community goes onchain')
+                                .setDescription(
+    'Build your on-chain reputation. Connect wallet, mint your asset.\n\n' +
+    '🌐      __**https://ambassador.botanixlabs.com/**__\n\n' +
+    'Free mint • Monthly drops • Utility soon\n\n\n' +  // triple \n
+    '⚡ Need BTC on Botanix? [Quick bridge guide](https://discord.com/channels/937915188903018498/1186683012004446350/1471173793446760570)'
+)
+                .setImage('https://cdn.discordapp.com/attachments/1430551206115282954/1480524794129809459/NFT_MAG05_CROP.png')
+        }
+    ]
+}

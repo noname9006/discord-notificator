@@ -1,11 +1,10 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const dotenv = require('dotenv');
+dotenv.config();
 const { startGlobalEngine } = require('./engines/globalEngine');
 const { startIndependentEngine } = require('./engines/independentEngine');
 const globalConfig = require('./notifications/global.config');
 const independentConfigs = require('./notifications/independent.config');
-
-dotenv.config();
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 if (!DISCORD_TOKEN) { console.error('[BOT][FATAL] DISCORD_TOKEN is not set.'); process.exit(1); }
