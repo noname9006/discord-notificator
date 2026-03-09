@@ -10,6 +10,15 @@ const stateStore = require('./store/stateStore');
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 if (!DISCORD_TOKEN) { console.error('[BOT][FATAL] DISCORD_TOKEN is not set.'); process.exit(1); }
 
+process.on('unhandledRejection', (reason) => {
+    console.error('[BOT][ERROR] Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('[BOT][FATAL] Uncaught exception:', err);
+    process.exit(1);
+});
+
 function parseFilter(envValue) {
     if (!envValue || !envValue.trim()) return null;
     return new Set(
@@ -50,4 +59,16 @@ client.once('ready', () => {
 });
 
 client.on('error', (err) => console.error('[BOT][ERROR]', err));
-client.login(DISCORD_TOKEN);
+
+function shutdown(signal) {
+    console.log(`[BOT] Received ${signal} — flushing state and exiting.`);
+    stateStore.saveState(state);
+    process.exit(0);
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+
+client.login(DISCORD_TOKEN).catch((err) => {
+    console.error('[BOT][FATAL] Failed to log in to Discord:', err.message);
+    process.exit(1);
+});

@@ -27,9 +27,13 @@ function loadState() {
 }
 
 function saveState(state) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(TMP_FILE, JSON.stringify(state, null, 2), 'utf8');
-    fs.renameSync(TMP_FILE, STATE_FILE);
+    try {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+        fs.writeFileSync(TMP_FILE, JSON.stringify(state, null, 2), 'utf8');
+        fs.renameSync(TMP_FILE, STATE_FILE);
+    } catch (err) {
+        console.error('[STATE][ERROR] Failed to persist state:', err.message);
+    }
 }
 
 function addEntry(state, entry) {
