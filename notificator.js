@@ -31,6 +31,10 @@ function parseFilter(envValue) {
 const globalFilter      = parseFilter(process.env.GLOBAL_NOTIFICATIONS);
 const independentFilter = parseFilter(process.env.INDEPENDENT_NOTIFICATIONS);
 
+// GLOBAL_NOTIFICATIONS (comma-separated numbers, e.g. "1,2") restricts which
+// global notifications are active. If set to a single value such as "1", only
+// that notification will ever be sent and the engine will never advance to the
+// others. Leave this env var unset (or empty) to enable all notifications.
 const activeGlobalConfig = {
     ...globalConfig,
     notifications: globalFilter
