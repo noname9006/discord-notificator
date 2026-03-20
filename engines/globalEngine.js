@@ -43,6 +43,7 @@ function startGlobalEngine(client, config, { stateStore, state }) {
                 await attemptSend(notification);
                 console.log(`[GLOBAL][INFO] Sent "${notification.id}" (index ${currentIndex}) to channel ${channelId}.`);
                 consecutiveFailures = 0;
+                lastErr = undefined; // clear any stale error from a previous failed attempt
                 break;
             } catch (err) {
                 lastErr = err;
