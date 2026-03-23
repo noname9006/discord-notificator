@@ -74,6 +74,15 @@ npm start
 | `INDEPENDENT_1_MIN_MESSAGES` | No | `5` | Min user messages required before sending |
 | `INDEPENDENT_1_COOLDOWN_MINUTES` | No | `10` | Minutes to wait before retrying |
 
+### Notification Filters
+
+These variables control which configured notifications are active at runtime. Both accept a comma-separated list of notification numbers (e.g. `1,2`). Leave unset or empty to enable all notifications of that type.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `GLOBAL_NOTIFICATIONS` | No | _(all)_ | Restricts which global queue notifications are active. Only the listed entries will be sent; the queue cycles among them. Example: `1,2` activates global-notification-1 and global-notification-2. |
+| `INDEPENDENT_NOTIFICATIONS` | No | _(all)_ | Restricts which independent notifications run. All others are disabled at startup. Example: `1` runs only independent-notification-1. |
+
 ---
 
 ## Notification Types
