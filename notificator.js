@@ -1,9 +1,10 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
 const dotenv = require('dotenv');
 dotenv.config();
 const { startGlobalEngine } = require('./engines/globalEngine');
 const { startIndependentEngine } = require('./engines/independentEngine');
 const globalConfig = require('./notifications/global.config');
+const testConfig = require('./notifications/test.config');
 const independentConfigs = require('./notifications/independent.config');
 const stateStore = require('./store/stateStore');
 
@@ -54,12 +55,33 @@ const activeIndependentConfigs = independentFilter
 
 const state = stateStore.loadState();
 
+const ERROR_MESSAGE_DELETE_TIMEOUT_MS = 60_000;
+
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 client.once('ready', () => {
     console.log(`[BOT] Logged in as ${client.user.tag}`);
     startGlobalEngine(client, activeGlobalConfig, { stateStore, state });
     for (const cfg of activeIndependentConfigs) startIndependentEngine(client, cfg, { stateStore, state });
+});
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+    if (message.content.trim() !== '!!testembed') return;
+    if (!message.member?.permissions.has(PermissionFlagsBits.Administrator)) return;
+
+    try {
+        await message.channel.send({ embeds: [testConfig.embed] });
+        console.log(`[TESTEMBED][INFO] Sent test embed to channel ${message.channelId} by ${message.author.tag}`);
+    } catch (err) {
+        console.error(`[TESTEMBED][ERROR] Failed to send test embed: ${err.message}`);
+        try {
+            const errMsg = await message.reply(`⚠️ Failed to send test embed: ${err.message}`);
+            setTimeout(() => errMsg.delete().catch(() => {}), ERROR_MESSAGE_DELETE_TIMEOUT_MS);
+        } catch (replyErr) {
+            console.error(`[TESTEMBED][ERROR] Could not send error reply: ${replyErr.message}`);
+        }
+    }
 });
 
 client.on('error', (err) => console.error('[BOT][ERROR]', err));
