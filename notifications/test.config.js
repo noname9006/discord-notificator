@@ -3,14 +3,17 @@ const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     id: 'test-notification',
-    embed: new EmbedBuilder()
-        .setColor('Gold')
-        .setTitle('🧪 Test Embed Preview')
+        embed: new EmbedBuilder()
+
+        .setColor('#F7931A')
+
+        .setTitle('MISSION TWO <a:token_btc:1438212695399858307>')
+
         .setDescription(
-            'This is a **sample embed** for previewing purposes.\n\n' +
-            '• Edit `notifications/test.config.js` to customise this embed\n' +
-            '• Run `!!testembed` in any channel to preview it\n\n' +
-            '_Only server admins can use this command._'
+            '**The future financial system is coming.**\n' +
+            '||Launch: <t:1774962000:R>||\n\n' +
+            '**Botanist and Hyperion ambassadors — claim your spot first.**\n\n' +
+            '**→ Open ticket:** ||<#1394601431440293918> → Mission Two||'
         )
-        .setTimestamp(),
-};
+        .setImage('https://c.tenor.com/fM676sHOU4MAAAAd/tenor.gif'),
+}
