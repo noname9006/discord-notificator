@@ -59,7 +59,7 @@ const ERROR_MESSAGE_DELETE_TIMEOUT_MS = 60_000;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-client.once('ready', () => {
+client.once('clientReady', () => {
     console.log(`[BOT] Logged in as ${client.user.tag}`);
     startGlobalEngine(client, activeGlobalConfig, { stateStore, state });
     for (const cfg of activeIndependentConfigs) startIndependentEngine(client, cfg, { stateStore, state });

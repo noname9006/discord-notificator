@@ -16,7 +16,7 @@ module.exports = {
                     'Free mint  •  Monthly drops  •  Utility soon\n\n\n' +
                     ':zap: Need BTC on Botanix? [Quick bridge guide](https://discord.com/channels/937915188903018498/1186683012004446350/1471173793446760570)'
                 )
-                .setImage('https://media.discordapp.net/attachments/979429058695790675/1491801606117654690/4-05.webp')
+                .setImage('https://media.discordapp.net/attachments/979429058695790675/1501161504257609868/5-05.webp')
         },
         {
             id: 'global-notification-2',
